@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 lowest_frame = 64
 
-top_path = Path(f"/media/zhiyang/zhiyang_HDD/robot/")
+top_path = Path(f"/home/zzhang18/proj/robot/")
 human_path, robot_path = top_path / "amass_x_G1_human/train/", top_path / "amass_new_robot/"
 human_trajs = sorted(list(human_path.glob("**/*_target14_rotvec.pkl")), key=lambda x: x.name)
 robot_trajs = sorted(list(robot_path.glob("**/*.pkl")), key=lambda x: x.name)

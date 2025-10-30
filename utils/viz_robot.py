@@ -12,6 +12,7 @@ def viz_robot(urdf, root_pos, root_rot, dof_pos, fps=30.0, render=False):
     sim_params.substeps = 2
     sim_params.up_axis = gymapi.UP_AXIS_Z
     sim_params.use_gpu_pipeline = False
+    sim_params.physx.use_gpu = False
     sim_params.physx.solver_type = 1
     sim_params.physx.num_position_iterations = 8
     sim_params.physx.num_velocity_iterations = 1
@@ -125,6 +126,7 @@ def viz_robot(urdf, root_pos, root_rot, dof_pos, fps=30.0, render=False):
         gym.render_all_camera_sensors(sim)
         gym.start_access_image_tensors(sim)
         image_tensor = gym.get_camera_image(sim, env, camera_handle, gymapi.IMAGE_COLOR)
+        print(image_tensor.shape)
         image_tensor = image_tensor.reshape(cam_props.height, cam_props.width, 4)[..., :3]
         video[frame - 1] = image_tensor
 
@@ -137,7 +139,7 @@ def viz_robot(urdf, root_pos, root_rot, dof_pos, fps=30.0, render=False):
 
 if __name__ == "__main__":
     # # --- load data ---
-    with open("/home/zhiyang/projects/robot/clip/01_01_stageii_robot.pkl", "rb") as f:
+    with open("/home/zzhang18/proj/robot/amass_new_robot/ACCAD/Male2General_c3d/A10-_Lie_to_crouch_stageii.pkl", "rb") as f:
         data = pickle.load(f)
     print(data.keys())
     dof_pos  = np.asarray(data["dof_pos"],  np.float32)      # [T, D]
@@ -146,4 +148,4 @@ if __name__ == "__main__":
     root_rot = np.asarray(data["root_rot"], np.float32)      # [T, 4]  <-- 必须是 xyzw！
     # fps      = float(data.get("fps", 30.0))
 
-    viz_robot("/home/zhiyang/projects/robot/G1/g1_29dof.urdf", root_pos, root_rot, dof_pos)
+    viz_robot("/home/zzhang18/proj/robot/G1/g1_29dof.urdf", root_pos, root_rot, dof_pos)

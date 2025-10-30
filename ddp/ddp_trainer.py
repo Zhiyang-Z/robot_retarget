@@ -10,6 +10,7 @@ import numpy as np
 from utils.utils import DDPM
 from tqdm import tqdm
 from utils.viz_robot import viz_robot
+import wandb
 
 class Trainer:
     def __init__(
@@ -29,7 +30,7 @@ class Trainer:
         self.model = self.model.to(self.device)
         self.model = DDP(self.model)
         # compile should be after DDP, refer to https://pytorch.org/docs/main/notes/ddp.html
-        self.model = torch.compile(self.model)
+        # self.model = torch.compile(self.model)
         
         self.model.train()
 
@@ -38,6 +39,9 @@ class Trainer:
         self.loss_fn = torch.nn.MSELoss()
 
         self.ddpm = DDPM(1000, True, self.device)
+
+        if self.rank == 0:
+            wandb.init(project="robot_retarget", entity="zhiyang")
 
     def train(self):
         step = -1
@@ -64,11 +68,16 @@ class Trainer:
                 dist.all_reduce(avg_loss, op=dist.ReduceOp.AVG)
                 dist.all_reduce(avg_grad_norm, op=dist.ReduceOp.AVG)
 
-                if step % 10000 == 0 and self.rank == 0:
-                    self.sample(h_pose, r_root, r_rot)
-
                 # if step % 10000 == 0 and self.rank == 0:
-                #     torch.save(self.model.state_dict(), f"/home/zzhang18/proj/Traj_Gen/saved_models/{self.mark}_{step}.pt")
+                #     self.sample(h_pose, r_root, r_rot)
+
+                if self.rank == 0:
+                    wandb.log({"epoch": epoch}, step=step, commit = False)
+                    wandb.log({"grad_norm": avg_grad_norm.item()}, step=step, commit = False)
+                    wandb.log({"loss": avg_loss[0].item()}, step=step, commit=True)
+
+                if step % 10000 == 0 and self.rank == 0:
+                    torch.save(self.model.state_dict(), f"/home/zzhang18/proj/robot/robot_retarget/saved_models/{self.mark}_{step}.pt")
 
     @torch.no_grad
     def sample(self, h_pose, r_root, r_rot):
@@ -85,6 +94,6 @@ class Trainer:
             noise = self.ddpm.denoise_ddim(noise, noise_pred, t, t_next, 0)
 
         video = viz_robot("/home/zhiyang/projects/robot/G1/g1_29dof.urdf", r_root[0], r_rot[0], noise[0].cpu().numpy())
-        import imageio.v2 as imageio
-        imageio.mimsave('output.mp4', video, fps=30)
+        # import imageio.v2 as imageio
+        # imageio.mimsave('output.mp4', video, fps=30)
 

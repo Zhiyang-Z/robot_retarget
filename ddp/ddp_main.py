@@ -19,9 +19,9 @@ def ddp_main(rank: int, world_size: int, resume: bool):
     with open("config.yaml", "r") as f:
         config = yaml.safe_load(f)
 
-    dataset = RetargetDataset(f"/media/zhiyang/zhiyang_HDD/robot/",
-                              f"/home/zhiyang/projects/robot/robot_retarget/dataset/delete_files.pkl",
-                              f"/home/zhiyang/projects/robot/robot_retarget/dataset/frame_list.npy")
+    dataset = RetargetDataset(f"/home/zzhang18/proj/robot/",
+                              f"/home/zzhang18/proj/robot/robot_retarget/dataset/delete_files.pkl",
+                              f"/home/zzhang18/proj/robot/robot_retarget/dataset/frame_list.npy")
     dataloader = DataLoader(dataset,
                             batch_size=128,
                             pin_memory=True,
@@ -34,7 +34,7 @@ def ddp_main(rank: int, world_size: int, resume: bool):
     # for data in dataloader:
     #     h_pose, r_pose, r_root, r_rot = data
     #     viz_robot("/home/zhiyang/projects/robot/G1/g1_29dof.urdf", r_root[0], r_rot[0], r_pose[0])
-    #     break
+    #     exit
     # # test dataloader speed
     # for i, data in tqdm(enumerate(dataloader)):
     #     pass
